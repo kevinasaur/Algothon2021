@@ -19,7 +19,7 @@ def shapePos(prcSoFar):
     # Window threshold subject to optimisation
     window = 5
     
-    for i in len(prcSoFar):
+    for i in range(len(prcSoFar)):
         shape = prcSoFar[i,:]
         shape_reshaped = shape[-window:].reshape(1,window)
     
