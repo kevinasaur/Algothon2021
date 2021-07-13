@@ -8,11 +8,52 @@ nInst=100
 
 # Dummy algorithm to demonstrate function format.
 def getMyPosition (prcSoFar):
-    currentPos_first = np.zeros(50)
+    currentPos_first = shapePos(prcSoFar[:50,])
     currentPos_second = volatilePos(prcSoFar[50:,])
     
     currentPos = np.concatenate((currentPos_first, currentPos_second))
     return currentPos
+
+def shapePos(prcSoFar):
+    
+    # Window threshold subject to optimisation
+    window = 5
+    
+    for i in len(prcSoFar):
+        shape = prcSoFar[i,:]
+        shape_reshaped = shape[-window:].reshape(1,window)
+    
+        # Create empty position vector
+        pos = np.zeros(100)
+
+        # Define exponential patterns to look for matches against
+        up_flat = -np.exp(-5*np.linspace(0,1,window))
+        down_flat = np.exp(-5*np.linspace(0,1,window))
+        flat_up = np.exp(5*np.linspace(0,1,window))
+        flat_down = -np.exp(5*np.linspace(0,1,window))
+
+        # Stack matrixes for cross-correlation calculations
+        shape_data = np.concatenate((shape_reshaped,(up_flat,down_flat,flat_up,flat_down)), axis=0)
+
+        # Calculate correlation
+        shape_corr = np.corrcoef(shape_data,rowvar=True)
+        
+        # Categorise current window
+        if shape_corr[-4,0] > shape_corr[-2,0]:
+            # Sell if in decreasing upwards trend (proportional to confidence in shape)
+            if (shape_corr[-4,0] > 0.75): pos[i] = -100*shape_corr[-4,0]
+        else:
+            # Buy if in increasing upwards trend (proportional to confidence in shape)
+            if (shape_corr[-2,0] > 0.75): pos[i] = 100*shape_corr[-2,0]
+
+        if shape_corr[-3,0] > shape_corr[-1,0]:
+            # Buy if in decreasing downwards trend (proportional to confidence in shape)
+            if (shape_corr[-3,0] > 0.75): pos[i] = 100*shape_corr[-3,0]
+        else:
+            # Sell if in increasing downwards trend (proportional to confidence in shape)
+            if (shape_corr[-1,0] > 0.75): pos[i] = -100*shape_corr[-1,0]
+
+    return pos
 
 def volatilePos(second_half):
       
