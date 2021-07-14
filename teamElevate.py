@@ -8,12 +8,14 @@ nInst=100
 
 # Dummy algorithm to demonstrate function format.
 def getMyPosition (prcSoFar):
-    currentPos_first = shapePos(prcSoFar[:50,])
+#     currentPos_first = shapePos(prcSoFar[:50,])
+    currentPos_first = np.zeros(50)
     currentPos_second = volatilePos(prcSoFar[50:,])
     
     currentPos = np.concatenate((currentPos_first, currentPos_second))
     return currentPos
 
+# currently decreasing return so not used
 def shapePos(prcSoFar):
     
     # Window threshold subject to optimisation
@@ -24,7 +26,7 @@ def shapePos(prcSoFar):
         shape_reshaped = shape[-window:].reshape(1,window)
     
         # Create empty position vector
-        pos = np.zeros(100)
+        pos = np.zeros(50)
 
         # Define exponential patterns to look for matches against
         up_flat = -np.exp(-5*np.linspace(0,1,window))
